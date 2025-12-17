@@ -714,7 +714,7 @@ th, td {
   <h2 class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
     Layers 
     <div class="tooltip-wrapper">
-    <button onclick="exportSchemeToCSV()" style="width:auto;" class="util-button"> 💾 Export</button>
+    <button onclick="exportSchemeToCSV()" style="width:auto;" class="util-button">Export</button>
       <div class="tooltip" id="refreshTooltip">
     Export as CSV and use it directly in Layoo for your future entries with a scheme.
   </div>
@@ -738,7 +738,7 @@ th, td {
   <h2 class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
     Risk & Rewards
     <div class="tooltip-wrapper">
-    <button id="refreshRR" style="width:auto;" class="util-button">🔄️ Refresh</button>
+    <button id="refreshRR" style="width:auto;" class="util-button">Refresh</button>
     <div class="tooltip" id="refreshTooltip">
     Recalculate risk and reward using the current trade settings.
     Use this after changing layers or trade parameters (SL, TPs, zone limits).
@@ -925,7 +925,6 @@ function refreshTable() {
 
   layers.forEach((l, i) => {
     const tr = document.createElement("tr");
-    console.log(l.stopTP)
     tr.innerHTML = `
       <td>${l.type == "percent" ? "Zone %" : "Price"}</td>
       <td>${l.value}</td>
@@ -956,7 +955,6 @@ function editLayer(i) {
 
   const l = layers[i];
   editingIndex = i;
-  console.log(l)
 
   labelLayerValue.textContent = l.type === "percent" ? "% of the zone*" : "Price*";
   layerType.value = l.type;
