@@ -91,6 +91,57 @@ header {
 }
 
 /* ======================================================
+   TOOLTIP
+====================================================== */
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 120%;
+  right: 0;
+  width: 240px;
+
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.5;
+
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity .15s ease, transform .15s ease;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  z-index: 20;
+}
+
+/* Tooltip arrow */
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 16px;
+
+  border-width: 6px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+/* Show on hover & focus */
+.tooltip-wrapper:hover .tooltip,
+.tooltip-wrapper:focus-within .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ======================================================
    HERO
 ====================================================== */
 
@@ -277,6 +328,10 @@ button:hover {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+}
+
+.util-button{
+  background:var(--primary)
 }
 
 /* ======================================================
@@ -648,7 +703,14 @@ th, td {
 
 
 <div class="block" id = "layersList">
-  <h2 class="section-title">Layers</h2>
+  <h2 class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+    Layers 
+    <div class="tooltip-wrapper">
+    <button onclick="exportSchemeToCSV()" style="width:auto;" class="util-button"> 💾 Export</button>
+      <div class="tooltip" id="refreshTooltip">
+    Export as CSV and use it directly in Layoo for your future entries with a scheme.
+  </div>
+</div></h2>
   <table>
     <thead>
       <tr>
@@ -992,6 +1054,105 @@ window.onload = () => {
   computeFixedScheme('10layers');
   updateTPDropdown()
 };
+
+function exportSchemeToCSV() {
+  if (layers.length === 0) {
+    alert("No layers to export.");
+    return;
+  }
+
+  const entryStart = parseFloat(entryStartEl.value);
+  const entryEnd   = parseFloat(entryEndEl.value);
+  const sl         = parseFloat(stopLossEl.value);
+
+  const zoneSize = Math.abs(entryStart - entryEnd);
+  const slSize   = Math.abs(entryStart - sl);
+
+  const tps = tpListEl.value
+    .split(",")
+    .map(v => parseFloat(v.trim()))
+    .filter(v => !isNaN(v));
+
+  /* =========================
+     BUILD CSV ROWS
+  ========================= */
+
+  let volumeWeights = ["volume_weights"];
+  let entrySteps    = ["entry_steps"];
+  let tpMap         = ["tp_map"];
+
+  let volumeSum = 0;
+
+  layers.forEach(l => {
+    const weight = l.portion / 100;
+    volumeWeights.push(weight.toFixed(4));
+    volumeSum += weight;
+
+    let entryStep;
+    if (l.type === "percent") {
+      entryStep = l.value / 100;
+    } else {
+      entryStep = Math.abs(entryStart - l.value) / zoneSize;
+    }
+
+    if (entryStep > 1) {
+      alert("Invalid scheme: one entry step exceeds the entry zone.");
+      return;
+    }
+
+    entrySteps.push(entryStep.toFixed(4));
+
+    const tpIndex = tps.indexOf(l.stopTP);
+    tpMap.push(tpIndex);
+  });
+
+  if (Math.abs(volumeSum - 1) > 0.001) {
+    alert("Invalid scheme: volume weights must sum to 100%.");
+    return;
+  }
+
+  /* =========================
+     TP STEPS
+  ========================= */
+
+  let tpSteps = ["tp_steps"];
+  tps.forEach(tp => {
+    const step = Math.abs(tp - entryStart) / slSize;
+    tpSteps.push(step.toFixed(4));
+  });
+
+  /* =========================
+     FINAL CSV
+  ========================= */
+
+  const csvLines = [
+    volumeWeights.join(","),
+    entrySteps.join(","),
+    tpMap.join(","),
+    tpSteps.join(","),
+    "scheme_type,pending",
+    "description,Custom scheme created on Layoo"
+  ];
+
+  const csvContent = csvLines.join("\n");
+
+  downloadCSV(csvContent, "layoo_scheme.csv");
+}
+function downloadCSV(content, filename) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.style.display = "none";
+
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 </script>
 
 </body>
