@@ -1098,9 +1098,13 @@ function exportSchemeToCSV() {
   let tpMap         = ["tp_map"];
 
   let volumeSum = 0;
+  let minWeight = 1
 
   layers.forEach(l => {
     const weight = l.portion / 100;
+    if (weight<minWeight){
+      minWeight=weight
+    }
     volumeWeights.push(weight.toFixed(4));
     volumeSum += weight;
 
@@ -1140,14 +1144,15 @@ function exportSchemeToCSV() {
   /* =========================
      FINAL CSV
   ========================= */
-
+  const MIN_LOT_METATRADER = 0.01
+  const minLotSize = MIN_LOT_METATRADER / minWeight
   const csvLines = [
     volumeWeights.join(","),
     entrySteps.join(","),
     tpMap.join(","),
     tpSteps.join(","),
     "scheme_type,pending",
-    "description,Custom scheme created on Layoo"
+    `description,Custom scheme created on Layoo (min lot = ${minLotSize.toFixed(2)})`
   ];
 
   const csvContent = csvLines.join("\n");
