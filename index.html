@@ -672,7 +672,7 @@ th, td {
 
 </div>
 <h2 class="section-title"> Do It Yourself: Create and Test a Layer Scheme</h2>
-<div class="block beautiful-form">
+<div class="block beautiful-form" id="diy-form">
   <h2 class="section-title">Add or Modify Layers</h2>
     <div class="form-grid">
 <div class="form-field">
@@ -935,7 +935,7 @@ function refreshTable() {
 }
 
 function editLayer(i) {
-  const card = document.getElementById('card_form');
+  const card = document.getElementById('diy-form');
   card.classList.add('highlight-form');
   setTimeout(() => card.classList.remove('highlight-form'), 800);
 
@@ -948,7 +948,8 @@ function editLayer(i) {
   layerPortion.value = l.portion;
   layerStopTP.value = l.stopTP;
 
-  layerType.value = type;  //To keep same editing
+  layerType.value = l.type;  //To keep same editing
+  document.getElementById("saveLayer").innerText = "Modify Layer"
 }
 
 function deleteLayer(i) {
@@ -976,6 +977,7 @@ document.getElementById("saveLayer").addEventListener("click", () => {
     layerValue.value=null;
     layerPortion.value=null, 
     layerStopTP.value=null
+    document.getElementById("saveLayer").innerText = "Save Layer"
   } else {
     layers.push(layer);
   }
